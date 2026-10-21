@@ -10,7 +10,19 @@ builder.Services.AddProblemDetails(options => options.CustomizeProblemDetails = 
         context.ProblemDetails.Detail = "The request body is missing or is not valid JSON for this endpoint.";
 });
 
+// The Web Forms host page (another origin) calls this API from the browser. Only listed origins
+// may read responses; the list is empty unless configured (see appsettings.Development.json).
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
+builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy
+    .WithOrigins(allowedOrigins)
+    .WithMethods("POST")
+    .WithHeaders("Content-Type")));
+
 var app = builder.Build();
+
+// First in the pipeline so error responses (including ones the exception handler writes)
+// also carry CORS headers; otherwise the browser hides validation errors from the element.
+app.UseCors();
 
 // Bad request bodies surface as BadHttpRequestException; keep their 400 instead of turning them into a 500.
 app.UseExceptionHandler(new ExceptionHandlerOptions

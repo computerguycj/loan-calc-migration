@@ -13,7 +13,7 @@ Throwaway code for interview prep. Not financial advice.
 | `tests/LoanCalc.Core.Tests` | xUnit tests, run on net10.0 and net48 | Stage 1 ✅ |
 | `src/LoanCalc.WebForms` | .NET Framework 4.8 Web Forms site (postback) | Stage 2 ✅ |
 | `src/LoanCalc.Api` | ASP.NET Core minimal API | Stage 3 ✅ |
-| `src/loan-calc-vue` | Vite + Vue 3 `<loan-compare>` custom element | Stage 4 |
+| `src/loan-calc-vue` | Vite + Vue 3 `<loan-compare>` custom element, hosted by `CompareVue.aspx` | Stage 4 ✅ |
 
 ## Prerequisites
 
@@ -84,6 +84,45 @@ Responses:
   `{ "errors": { "loanA.annualRatePercent": ["Interest rate must be between 0 and 30%."], "loanB": ["Loan details are required."] } }`
 - **400, bad body:** problem details when the body is missing or isn't valid JSON (e.g. `"principal": "lots"`).
 
+## Run the Vue page (Stage 4)
+
+`CompareVue.aspx` is served by the Web Forms site. It loads the `<loan-compare>` bundle, which calls the API
+directly. It needs three things: the bundle built, the API running, and the Web Forms site running.
+
+1. Build the custom element (from the repo root). This writes
+   `src/LoanCalc.WebForms/Scripts/loan-compare/loan-compare.js`, which isn't checked in:
+
+   ```bash
+   npm --prefix src/loan-calc-vue ci
+   ```
+
+   ```bash
+   npm --prefix src/loan-calc-vue run build
+   ```
+
+2. Start the API (leave it running): `dotnet run --project src/LoanCalc.Api`
+3. Start the Web Forms site as in Stage 2 (VS F5, or MSBuild + IIS Express).
+4. Open http://localhost:5080/CompareVue.aspx. Each page links to the other.
+
+The page reads the API address from `LoanApiBaseUrl` in `src/LoanCalc.WebForms/Web.config`. The API allows
+that origin through `Cors:AllowedOrigins` in `src/LoanCalc.Api/appsettings.Development.json`.
+
+### Working on the element by itself
+
+With the API running:
+
+```bash
+npm --prefix src/loan-calc-vue run dev
+```
+
+Then open http://localhost:5173. The Vite dev server hot-reloads, and it forwards `/api` to the API, so no CORS is involved.
+
+### Re-theming
+
+The element reads the same `--lc-*` custom properties as `Content/site.css`, and they inherit through the
+shadow root. Override them on the host page, e.g. `:root { --lc-accent: #6b2f8a; }`. With no theme set,
+the element falls back to its built-in defaults.
+
 ## How the numbers are calculated
 
 - **Monthly payment:** the standard annuity formula, rounded to the cent. A 0% rate is
@@ -105,3 +144,15 @@ Responses:
 
 `LoanCalc.Core`, `LoanCalc.WebForms`, and `LoanCalc.Api` have no package dependencies. The API uses only
 the ASP.NET Core shared framework (MIT).
+
+npm packages in `src/loan-calc-vue` (versions pinned in `package.json`):
+
+| Package | Kind | License |
+|---|---|---|
+| vue 3.5.44 | runtime (the only code in the shipped bundle) | MIT |
+| vite 8.3.5 | build tool | MIT |
+| @vitejs/plugin-vue 6.0.10 | build tool | MIT |
+
+Their transitive dependencies (build-time only, checked against `node_modules`) are all open source:
+MIT (most of them, including rolldown, postcss, and @vue/*), Apache-2.0 (detect-libc),
+BSD-2-Clause (entities), BSD-3-Clause (source-map-js), ISC (picocolors), and MPL-2.0 (lightningcss).

@@ -13,7 +13,7 @@
         <main class="page">
             <header class="page-header">
                 <h1>Compare two loans</h1>
-                <p class="muted">Web Forms version: the server calculates on each postback.</p>
+                <p class="muted">Web Forms version: the server calculates on each postback. <a href="CompareVue.aspx">Vue version</a></p>
             </header>
 
             <div class="loans">

@@ -105,3 +105,50 @@ One entry per real decision: what, why, and what I'd revisit.
 - **Why:** Keeps the package list empty and the project small.
 - **Revisit:** Add `Microsoft.AspNetCore.OpenApi` (MIT) if a typed client for the Vue app becomes worth generating.
   Add `WebApplicationFactory` integration tests if the API grows past one endpoint.
+
+## 16. Cross-origin calls: CORS on the API (not a proxy) until Stage 5
+
+- **What:** The Web Forms page (localhost:5080) calls the API (localhost:5090) directly. The API's CORS policy allows
+  only origins listed in `Cors:AllowedOrigins` (Development: `http://localhost:5080`), only `POST`, and only the `Content-Type` header.
+- **Why:** A proxy needs something in front of the Web Forms site. IIS Express has no reverse-proxy module
+  (URL Rewrite + ARR) out of the box, and the Vite dev proxy only covers pages Vite itself serves. CORS is a few lines of
+  config and makes the cross-origin boundary visible, which is the honest state of a half-migrated app.
+  `UseCors()` runs first so that error responses carry CORS headers too. Without that, the browser hides 400s from the element.
+- **Revisit:** Stage 5. With YARP serving both apps from one origin, `LoanApiBaseUrl` becomes empty and the CORS list can be removed.
+
+## 17. API address comes from `Web.config`, passed as the `api-base` attribute
+
+- **What:** `CompareVue.aspx` renders `<loan-compare api-base="…">` from `appSettings["LoanApiBaseUrl"]`. The element
+  defaults to `''`, meaning same origin.
+- **Why:** The bundle stays environment-agnostic, so the same JS works cross-origin today and same-origin behind a proxy.
+- **Revisit:** Nothing, until there are more settings than one URL.
+
+## 18. Vite library build, IIFE format, Vue bundled in, output into the Web Forms site
+
+- **What:** `vite build` emits one `loan-compare.js` (about 81 kB, 31 kB gzipped) straight into
+  `LoanCalc.WebForms/Scripts/loan-compare/`. That folder is git-ignored and listed as `Content` in the `.csproj`.
+- **Why:** IIFE works from a plain `<script>` tag on a legacy page, and bundling Vue means the page doesn't need Vue
+  loaded separately. `customElement: true` inlines all component CSS into the shadow root, so no CSS file is emitted.
+- **Revisit:** If several Vue islands share a page, switch to ES modules with Vue as a shared chunk, so it loads once.
+  Add a cache-busting query string or hashed name when deploying for real.
+
+## 19. Element styles: `--lc-*` theme variables with built-in fallbacks
+
+- **What:** `:host` maps each `--lc-*` variable to a private `--_*` variable with a default, and the component CSS uses the
+  private ones. The names match `site.css`.
+- **Why:** Custom properties are the one styling channel that crosses the shadow boundary on purpose. Both pages share a
+  theme, and the element still looks right on an unthemed page.
+- **Revisit:** Add `::part()` names if a host ever needs to restyle more than colors.
+
+## 20. Element validation: HTML5 attributes only; server errors mapped per field
+
+- **What:** Inputs use `required`/`min`/`max`/`type="number"`, as in the Web Forms page. The 400 `errors` keys
+  (`loanA.principal`) are shown under the matching field. Network and CORS failures show one plain-English message.
+- **Why:** That's the same split as Web Forms: the browser checks are a convenience, and Core decides. No JS validation library needed.
+- **Revisit:** Fetch the allowed terms from the API instead of hard-coding them in `LoanFields.vue`.
+
+## 21. Plain JavaScript, not TypeScript, in the Vue project
+
+- **What:** `.js` and `<script setup>` without `lang="ts"`.
+- **Why:** Keeps the toolchain to three packages for a throwaway project.
+- **Revisit:** Use TypeScript for anything real, ideally with types generated from the API's OpenAPI document.

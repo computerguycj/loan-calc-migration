@@ -480,3 +480,6 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# Built by src/loan-calc-vue (npm run build)
+src/LoanCalc.WebForms/Scripts/loan-compare/

@@ -41,8 +41,11 @@
     <Reference Include="System.Web" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="CompareVue.aspx" />
     <Content Include="Content\site.css" />
     <Content Include="Default.aspx" />
+    <!-- Built by src/loan-calc-vue (npm run build); not checked in. -->
+    <Content Include="Scripts\loan-compare\loan-compare.js" />
     <Content Include="LoanInputs.ascx" />
     <Content Include="Web.config" />
   </ItemGroup>
