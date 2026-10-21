@@ -12,7 +12,7 @@ Throwaway code for interview prep. Not financial advice.
 | `src/LoanCalc.Core` | netstandard2.0 library: all loan math and validation | Stage 1 ✅ |
 | `tests/LoanCalc.Core.Tests` | xUnit tests, run on net10.0 and net48 | Stage 1 ✅ |
 | `src/LoanCalc.WebForms` | .NET Framework 4.8 Web Forms site (postback) | Stage 2 ✅ |
-| `src/LoanCalc.Api` | ASP.NET Core minimal API | Stage 3 |
+| `src/LoanCalc.Api` | ASP.NET Core minimal API | Stage 3 ✅ |
 | `src/loan-calc-vue` | Vite + Vue 3 `<loan-compare>` custom element | Stage 4 |
 
 ## Prerequisites
@@ -53,6 +53,37 @@ Then open http://localhost:5080/Default.aspx. Press `Q` in the IIS Express windo
 `dotnet build` also compiles the Web Forms project, but it skips the Visual Studio web targets.
 Those targets aren't needed to run the site locally, but publishing needs them, so use MSBuild for that.
 
+## Run the API (Stage 3)
+
+```bash
+dotnet run --project src/LoanCalc.Api
+```
+
+It listens on http://localhost:5090. To try it, open `src/LoanCalc.Api/LoanCalc.Api.http` in
+Visual Studio and click "Send request", or use curl:
+
+```bash
+curl -i -H "Content-Type: application/json" -d "{\"loanA\":{\"principal\":300000,\"annualRatePercent\":6.5,\"termYears\":30,\"fees\":6000},\"loanB\":{\"principal\":300000,\"annualRatePercent\":6.125,\"termYears\":30,\"fees\":9000,\"extraMonthlyPayment\":200}}" http://localhost:5090/api/loans/compare
+```
+
+### `POST /api/loans/compare`
+
+Request:
+
+```json
+{
+  "loanA": { "principal": 300000, "annualRatePercent": 6.5, "termYears": 30, "fees": 6000, "extraMonthlyPayment": 0 },
+  "loanB": { "principal": 300000, "annualRatePercent": 6.125, "termYears": 30, "fees": 9000, "extraMonthlyPayment": 200 }
+}
+```
+
+Responses:
+
+- **200:** `{ "loanA": { "monthlyPayment", "totalInterest", "totalPayback", "aprPercent", "payoffMonths" }, "loanB": { … } }`
+- **400, validation:** problem details with `errors` keyed by request path, e.g.
+  `{ "errors": { "loanA.annualRatePercent": ["Interest rate must be between 0 and 30%."], "loanB": ["Loan details are required."] } }`
+- **400, bad body:** problem details when the body is missing or isn't valid JSON (e.g. `"principal": "lots"`).
+
 ## How the numbers are calculated
 
 - **Monthly payment:** the standard annuity formula, rounded to the cent. A 0% rate is
@@ -72,4 +103,5 @@ Those targets aren't needed to run the site locally, but publishing needs them, 
 | xunit.runner.visualstudio | LoanCalc.Core.Tests | Apache-2.0 |
 | Microsoft.NET.Test.Sdk | LoanCalc.Core.Tests | MIT |
 
-`LoanCalc.Core` and `LoanCalc.WebForms` have no package dependencies.
+`LoanCalc.Core`, `LoanCalc.WebForms`, and `LoanCalc.Api` have no package dependencies. The API uses only
+the ASP.NET Core shared framework (MIT).

@@ -77,8 +77,31 @@ One entry per real decision: what, why, and what I'd revisit.
 - **Why:** The calculator is in US dollars, and `type="number"` inputs always post `.` as the decimal separator.
 - **Revisit:** Localization, if it ever matters.
 
-## 12. Fixed local ports: Web Forms on 5080
+## 12. Fixed local ports: Web Forms on 5080, API on 5090
 
 - **What:** IIS Express serves Web Forms at http://localhost:5080 (set in the `.csproj` too, so VS F5 uses the same port).
+  The API runs at http://localhost:5090, HTTP only (the template's HTTPS profile was removed).
 - **Why:** Stage 4 needs a predictable origin for the API's CORS setup or proxy.
-- **Revisit:** Stage 5 (YARP) puts everything behind one port.
+- **Revisit:** Stage 5 (YARP) puts everything behind one port. Use HTTPS anywhere that isn't local.
+
+## 13. API: one endpoint, Core's rules returned as `ValidationProblem`
+
+- **What:** `POST /api/loans/compare` takes `{ loanA, loanB }` and either returns both results or a 400 whose
+  `errors` keys mirror the JSON paths (`loanA.principal`). Both loans are always validated, so the caller sees every error at once.
+- **Why:** Problem details (RFC 9457) is the built-in ASP.NET Core error format. Path-shaped keys let the Vue element put
+  each message next to the right field. The API adds no rules of its own.
+- **Revisit:** Add a single-loan endpoint, or `GET /api/loans/terms` so the UI doesn't hard-code the allowed terms.
+
+## 14. API: malformed bodies return 400, not 500
+
+- **What:** `UseExceptionHandler` keeps the status code of `BadHttpRequestException` and adds a plain-English `detail`.
+- **Why:** In Development, minimal APIs throw on bad JSON, and the default exception handler turned that into a 500.
+  A client mistake should be a 400 in every environment.
+- **Revisit:** Nothing. This is just correct behavior.
+
+## 15. API: no Swagger/OpenAPI package; a `.http` file instead
+
+- **What:** Built from the `web` (empty) template, with no package references. Manual testing uses `LoanCalc.Api.http`.
+- **Why:** Keeps the package list empty and the project small.
+- **Revisit:** Add `Microsoft.AspNetCore.OpenApi` (MIT) if a typed client for the Vue app becomes worth generating.
+  Add `WebApplicationFactory` integration tests if the API grows past one endpoint.

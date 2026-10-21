@@ -1,0 +1,25 @@
+@api = http://localhost:5090
+
+### Valid comparison
+POST {{api}}/api/loans/compare
+Content-Type: application/json
+
+{
+  "loanA": { "principal": 300000, "annualRatePercent": 6.5, "termYears": 30, "fees": 6000, "extraMonthlyPayment": 0 },
+  "loanB": { "principal": 300000, "annualRatePercent": 6.125, "termYears": 30, "fees": 9000, "extraMonthlyPayment": 200 }
+}
+
+### Validation errors (400 with per-field messages)
+POST {{api}}/api/loans/compare
+Content-Type: application/json
+
+{
+  "loanA": { "principal": 0, "annualRatePercent": 45, "termYears": 12, "fees": 0 },
+  "loanB": null
+}
+
+### Malformed JSON (400 problem details)
+POST {{api}}/api/loans/compare
+Content-Type: application/json
+
+{ "loanA": { "principal": "lots" } }

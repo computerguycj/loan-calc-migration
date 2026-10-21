@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/LoanCalc.Api/LoanCalc.Api.csproj" />
     <Project Path="src/LoanCalc.Core/LoanCalc.Core.csproj" />
     <Project Path="src/LoanCalc.WebForms/LoanCalc.WebForms.csproj" />
   </Folder>
