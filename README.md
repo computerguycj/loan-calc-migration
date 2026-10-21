@@ -14,6 +14,16 @@ Throwaway code for interview prep. Not financial advice.
 | `src/LoanCalc.WebForms` | .NET Framework 4.8 Web Forms site (postback) | Stage 2 ✅ |
 | `src/LoanCalc.Api` | ASP.NET Core minimal API | Stage 3 ✅ |
 | `src/loan-calc-vue` | Vite + Vue 3 `<loan-compare>` custom element, hosted by `CompareVue.aspx` | Stage 4 ✅ |
+| `src/LoanCalc.Gateway` | YARP reverse proxy: one origin for both apps | Stage 5 ✅ |
+
+## Ports
+
+| App | URL | Who opens it |
+|---|---|---|
+| LoanCalc.Gateway | http://localhost:5000 | **you, in the browser** |
+| LoanCalc.WebForms (IIS Express) | http://localhost:5080 | the gateway |
+| LoanCalc.Api | http://localhost:5090 | the gateway |
+| Vite dev server (optional) | http://localhost:5173 | you, when working on the element alone |
 
 ## Prerequisites
 
@@ -84,10 +94,11 @@ Responses:
   `{ "errors": { "loanA.annualRatePercent": ["Interest rate must be between 0 and 30%."], "loanB": ["Loan details are required."] } }`
 - **400, bad body:** problem details when the body is missing or isn't valid JSON (e.g. `"principal": "lots"`).
 
-## Run the Vue page (Stage 4)
+## Run everything through the gateway (Stages 4 and 5)
 
-`CompareVue.aspx` is served by the Web Forms site. It loads the `<loan-compare>` bundle, which calls the API
-directly. It needs three things: the bundle built, the API running, and the Web Forms site running.
+`CompareVue.aspx` is served by the Web Forms site. It loads the `<loan-compare>` bundle, which calls
+`/api/loans/compare` on the same origin. `LoanCalc.Gateway` makes that work: it sends `/api/*` to the API and
+every other path to Web Forms. Open the site through the gateway.
 
 1. Build the custom element (from the repo root). This writes
    `src/LoanCalc.WebForms/Scripts/loan-compare/loan-compare.js`, which isn't checked in:
@@ -100,12 +111,28 @@ directly. It needs three things: the bundle built, the API running, and the Web 
    npm --prefix src/loan-calc-vue run build
    ```
 
-2. Start the API (leave it running): `dotnet run --project src/LoanCalc.Api`
-3. Start the Web Forms site as in Stage 2 (VS F5, or MSBuild + IIS Express).
-4. Open http://localhost:5080/CompareVue.aspx. Each page links to the other.
+2. Start the Web Forms site as in Stage 2 (VS F5, or MSBuild + IIS Express). Leave it running.
+3. In a second terminal, start the API and leave it running:
 
-The page reads the API address from `LoanApiBaseUrl` in `src/LoanCalc.WebForms/Web.config`. The API allows
-that origin through `Cors:AllowedOrigins` in `src/LoanCalc.Api/appsettings.Development.json`.
+   ```bash
+   dotnet run --project src/LoanCalc.Api
+   ```
+
+4. In a third terminal, start the gateway and leave it running:
+
+   ```bash
+   dotnet run --project src/LoanCalc.Gateway
+   ```
+
+5. Open http://localhost:5000/. Both pages work there: `Default.aspx` (Web Forms postback) and
+   `CompareVue.aspx` (Vue). Each page links to the other.
+
+Routes live in `src/LoanCalc.Gateway/appsettings.json` under `ReverseProxy`. To move another path to
+ASP.NET Core, add a route for it there. Everything without a route still goes to Web Forms.
+
+**Don't open `CompareVue.aspx` on port 5080 directly.** `LoanApiBaseUrl` in `Web.config` is empty, so the element
+calls `/api` on port 5080. IIS Express has no `/api`, so the element shows "The loan service returned 404."
+`Default.aspx` still works on 5080, because it doesn't call the API.
 
 ### Working on the element by itself
 
@@ -141,9 +168,11 @@ the element falls back to its built-in defaults.
 | xunit | LoanCalc.Core.Tests | Apache-2.0 |
 | xunit.runner.visualstudio | LoanCalc.Core.Tests | Apache-2.0 |
 | Microsoft.NET.Test.Sdk | LoanCalc.Core.Tests | MIT |
+| Yarp.ReverseProxy 2.3.0 | LoanCalc.Gateway | MIT |
+| System.IO.Hashing 8.0.0 (transitive, via YARP) | LoanCalc.Gateway | MIT |
 
-`LoanCalc.Core`, `LoanCalc.WebForms`, and `LoanCalc.Api` have no package dependencies. The API uses only
-the ASP.NET Core shared framework (MIT).
+`LoanCalc.Core`, `LoanCalc.WebForms`, and `LoanCalc.Api` have no package dependencies. The API and gateway
+also use the ASP.NET Core shared framework (MIT).
 
 npm packages in `src/loan-calc-vue` (versions pinned in `package.json`):
 

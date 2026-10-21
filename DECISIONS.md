@@ -106,7 +106,7 @@ One entry per real decision: what, why, and what I'd revisit.
 - **Revisit:** Add `Microsoft.AspNetCore.OpenApi` (MIT) if a typed client for the Vue app becomes worth generating.
   Add `WebApplicationFactory` integration tests if the API grows past one endpoint.
 
-## 16. Cross-origin calls: CORS on the API (not a proxy) until Stage 5
+## 16. Cross-origin calls: CORS on the API (not a proxy) until Stage 5 — *superseded by 22*
 
 - **What:** The Web Forms page (localhost:5080) calls the API (localhost:5090) directly. The API's CORS policy allows
   only origins listed in `Cors:AllowedOrigins` (Development: `http://localhost:5080`), only `POST`, and only the `Content-Type` header.
@@ -152,3 +152,35 @@ One entry per real decision: what, why, and what I'd revisit.
 - **What:** `.js` and `<script setup>` without `lang="ts"`.
 - **Why:** Keeps the toolchain to three packages for a throwaway project.
 - **Revisit:** Use TypeScript for anything real, ideally with types generated from the API's OpenAPI document.
+
+## 22. Stage 5: YARP gateway in front of both apps (strangler fig)
+
+- **What:** `LoanCalc.Gateway` (port 5000) routes `/api/{**rest}` to the API and everything else (`Order: 1000`)
+  to Web Forms. Routes live in `appsettings.json`. `LoanApiBaseUrl` is now empty, so the element calls its own origin.
+- **Why:** One origin is what users would see in production, and it's how an incremental migration usually ships.
+  Each migrated path is one explicit route; everything else falls through to the legacy app. The gateway is a separate,
+  near-empty app, so neither the old nor the new app has to know about the other.
+- **Revisit:** Add HTTPS, health checks, and forwarded-header handling (`X-Forwarded-*`) in the apps before anything real.
+  Eventually the API could host the gateway routes itself, removing one hop.
+
+## 23. CORS removed from the API
+
+- **What:** The CORS policy, `UseCors()`, and the `Cors:AllowedOrigins` setting are gone.
+- **Why:** Browsers now reach the API only through the gateway, on the same origin as the pages. A CORS policy nobody
+  needs is just attack surface to maintain.
+- **Revisit:** Add it back only if a page on another origin legitimately needs the API.
+
+## 24. Gateway is the only supported way to open the Vue page
+
+- **What:** `CompareVue.aspx` on port 5080 directly shows "The loan service returned 404". `Default.aspx` still works on 5080.
+- **Why:** Supporting both direct and proxied access needs a mode switch plus CORS again, for no real benefit. The
+  README says to open http://localhost:5000.
+- **Revisit:** If people keep opening 5080 by habit, make VS F5 launch the gateway too, or redirect 5080 to 5000.
+
+## 25. Host header: YARP's default (the destination's host)
+
+- **What:** No transforms. YARP sends `Host: localhost:5080` or `localhost:5090`, not `localhost:5000`.
+- **Why:** IIS Express only accepts requests whose Host header matches its binding (`localhost:5080`), and rejects others
+  with 400 "Invalid Hostname". The default just works; I verified it with postbacks through the gateway.
+- **Revisit:** If the apps need the public host (for absolute URLs or redirects), read `X-Forwarded-Host`, which YARP
+  adds by default, rather than switching to `RequestHeaderOriginalHost`.

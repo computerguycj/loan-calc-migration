@@ -2,6 +2,7 @@
   <Folder Name="/src/">
     <Project Path="src/LoanCalc.Api/LoanCalc.Api.csproj" />
     <Project Path="src/LoanCalc.Core/LoanCalc.Core.csproj" />
+    <Project Path="src/LoanCalc.Gateway/LoanCalc.Gateway.csproj" />
     <Project Path="src/LoanCalc.WebForms/LoanCalc.WebForms.csproj" />
   </Folder>
   <Folder Name="/tests/">
