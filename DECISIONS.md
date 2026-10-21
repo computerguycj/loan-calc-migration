@@ -50,3 +50,35 @@ One entry per real decision: what, why, and what I'd revisit.
 - **What:** No newer language features, so nothing needs runtime polyfills on net48.
 - **Why:** That keeps things simple for a library shared with .NET Framework.
 - **Revisit:** Raise `LangVersion` if records or nullable annotations become worth the polyfills.
+
+## 8. Web Forms import of VS web targets is conditional on the file existing
+
+- **What:** `Microsoft.WebApplication.targets` is imported only when the file exists, and the Web Forms project is in `LoanCalc.slnx`.
+- **Why:** That lets `dotnet build` / `dotnet test` run on the whole solution. VS and MSBuild still get the full web targets.
+- **Revisit:** If CI ever needs to publish Web Forms, it must use VS MSBuild. `dotnet` can't publish it.
+
+## 9. Web Forms: a user control per loan, no ASP.NET validator controls
+
+- **What:** `LoanInputs.ascx` is used twice. Its code-behind parses the text, then calls `LoanValidator` from Core.
+  Browser-side checks are just HTML5 attributes (`type="number"`, `min`, `max`, `required`).
+- **Why:** Validator controls would duplicate the rules in a second place. Parsing ("is this a number?") belongs
+  to the host, while range rules belong to Core.
+- **Revisit:** Nothing. This mirrors how the API will work: parse, then let Core decide.
+
+## 10. Web Forms needs a `netstandard` assembly entry in Web.config
+
+- **What:** `<compilation><assemblies>` lists `netstandard, Version=2.0.0.0`.
+- **Why:** ASP.NET compiles `.aspx` markup at runtime. Markup that touches netstandard2.0 types fails without it.
+- **Revisit:** Not needed once the page is gone.
+
+## 11. Results display in en-US, regardless of server culture
+
+- **What:** Money and percentages are formatted with `CultureInfo("en-US")`. Input is parsed with the invariant culture.
+- **Why:** The calculator is in US dollars, and `type="number"` inputs always post `.` as the decimal separator.
+- **Revisit:** Localization, if it ever matters.
+
+## 12. Fixed local ports: Web Forms on 5080
+
+- **What:** IIS Express serves Web Forms at http://localhost:5080 (set in the `.csproj` too, so VS F5 uses the same port).
+- **Why:** Stage 4 needs a predictable origin for the API's CORS setup or proxy.
+- **Revisit:** Stage 5 (YARP) puts everything behind one port.

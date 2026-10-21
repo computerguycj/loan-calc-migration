@@ -1,0 +1,92 @@
+/* Colors live in custom properties so the page can be re-themed by overriding :root. */
+:root {
+    --lc-bg: #f6f7f9;
+    --lc-surface: #ffffff;
+    --lc-text: #1d2330;
+    --lc-muted: #5d6677;
+    --lc-border: #d5d9e0;
+    --lc-accent: #2f5d8a;
+    --lc-accent-text: #ffffff;
+    --lc-good-bg: #e3f2e8;
+    --lc-good-text: #1d5e35;
+    --lc-error: #a32121;
+    --lc-error-bg: #fbeaea;
+    --lc-radius: 6px;
+    --lc-font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    background: var(--lc-bg);
+    color: var(--lc-text);
+    font-family: var(--lc-font);
+    line-height: 1.5;
+}
+
+.page { max-width: 880px; margin: 0 auto; padding: 24px 16px 48px; }
+.page-header h1 { margin: 0 0 4px; font-size: 1.6rem; }
+.muted { color: var(--lc-muted); font-weight: normal; }
+
+.loans {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    margin: 20px 0;
+}
+
+.loan {
+    margin: 0;
+    padding: 16px;
+    background: var(--lc-surface);
+    border: 1px solid var(--lc-border);
+    border-radius: var(--lc-radius);
+}
+.loan legend { padding: 0 6px; font-weight: 600; }
+
+.field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+.field label { font-size: 0.9rem; }
+.field input, .field select {
+    padding: 8px;
+    font: inherit;
+    color: var(--lc-text);
+    background: var(--lc-surface);
+    border: 1px solid var(--lc-border);
+    border-radius: var(--lc-radius);
+}
+.field .invalid { border-color: var(--lc-error); outline: 1px solid var(--lc-error); }
+
+.errors {
+    margin: 0 0 12px;
+    padding: 8px 8px 8px 28px;
+    color: var(--lc-error);
+    background: var(--lc-error-bg);
+    border-radius: var(--lc-radius);
+    font-size: 0.9rem;
+}
+
+.button {
+    padding: 10px 24px;
+    font: inherit;
+    font-weight: 600;
+    color: var(--lc-accent-text);
+    background: var(--lc-accent);
+    border: 0;
+    border-radius: var(--lc-radius);
+    cursor: pointer;
+}
+.button:hover { filter: brightness(1.1); }
+
+.results { margin-top: 24px; overflow-x: auto; }
+.results table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--lc-surface);
+    border: 1px solid var(--lc-border);
+}
+.results caption { text-align: left; font-weight: 600; padding-bottom: 8px; }
+.results th, .results td { padding: 8px 12px; border-bottom: 1px solid var(--lc-border); text-align: right; }
+.results th[scope="row"] { text-align: left; font-weight: normal; }
+.results td.better { background: var(--lc-good-bg); color: var(--lc-good-text); font-weight: 600; }
+.note { font-size: 0.85rem; }

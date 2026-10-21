@@ -11,7 +11,7 @@ Throwaway code for interview prep. Not financial advice.
 |---|---|---|
 | `src/LoanCalc.Core` | netstandard2.0 library: all loan math and validation | Stage 1 ✅ |
 | `tests/LoanCalc.Core.Tests` | xUnit tests, run on net10.0 and net48 | Stage 1 ✅ |
-| `src/LoanCalc.WebForms` | .NET Framework 4.8 Web Forms site | Stage 2 |
+| `src/LoanCalc.WebForms` | .NET Framework 4.8 Web Forms site (postback) | Stage 2 ✅ |
 | `src/LoanCalc.Api` | ASP.NET Core minimal API | Stage 3 |
 | `src/loan-calc-vue` | Vite + Vue 3 `<loan-compare>` custom element | Stage 4 |
 
@@ -30,8 +30,28 @@ From the repo root:
 dotnet test LoanCalc.slnx
 ```
 
-This builds `LoanCalc.Core` and runs the test suite twice, once on .NET 10 and once on
-.NET Framework 4.8.
+This builds every project in the solution and runs the test suite twice, once on .NET 10 and
+once on .NET Framework 4.8.
+
+## Run the Web Forms site (Stage 2)
+
+**From Visual Studio:** open `LoanCalc.slnx`, set `LoanCalc.WebForms` as the startup project,
+and press F5. It runs on IIS Express at http://localhost:5080/.
+
+**From the command line:** build with Visual Studio's MSBuild, then start IIS Express:
+
+```bash
+"C:\Program Files\Microsoft Visual Studio\18\Community\MSBuild\Current\Bin\MSBuild.exe" src\LoanCalc.WebForms\LoanCalc.WebForms.csproj -restore
+```
+
+```bash
+"C:\Program Files\IIS Express\iisexpress.exe" /path:C:\dci\src\LoanCalc.WebForms /port:5080
+```
+
+Then open http://localhost:5080/Default.aspx. Press `Q` in the IIS Express window to stop it.
+
+`dotnet build` also compiles the Web Forms project, but it skips the Visual Studio web targets.
+Those targets aren't needed to run the site locally, but publishing needs them, so use MSBuild for that.
 
 ## How the numbers are calculated
 
@@ -52,4 +72,4 @@ This builds `LoanCalc.Core` and runs the test suite twice, once on .NET 10 and o
 | xunit.runner.visualstudio | LoanCalc.Core.Tests | Apache-2.0 |
 | Microsoft.NET.Test.Sdk | LoanCalc.Core.Tests | MIT |
 
-`LoanCalc.Core` has no package dependencies.
+`LoanCalc.Core` and `LoanCalc.WebForms` have no package dependencies.
