@@ -1,0 +1,23 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "webforms",
+      "runtimeExecutable": "C:\\Program Files\\IIS Express\\iisexpress.exe",
+      "runtimeArgs": ["/path:C:\\dci\\src\\LoanCalc.WebForms", "/port:5080"],
+      "port": 5080
+    },
+    {
+      "name": "api",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": ["run", "--project", "src/LoanCalc.Api"],
+      "port": 5090
+    },
+    {
+      "name": "gateway",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": ["run", "--project", "src/LoanCalc.Gateway"],
+      "port": 5000
+    }
+  ]
+}
