@@ -184,3 +184,12 @@ One entry per real decision: what, why, and what I'd revisit.
   with 400 "Invalid Hostname". The default just works; I verified it with postbacks through the gateway.
 - **Revisit:** If the apps need the public host (for absolute URLs or redirects), read `X-Forwarded-Host`, which YARP
   adds by default, rather than switching to `RequestHeaderOriginalHost`.
+
+## 26. `.claude/launch.json` for starting the three apps
+
+- **What:** Named start configurations for `webforms` (IIS Express, 5080), `api` (5090), and `gateway` (5000), used by
+  Claude Code's preview tool. The `webforms` entry hard-codes `C:\Program Files\IIS Express\iisexpress.exe` and `C:\dci\...`.
+- **Why:** Starting, stopping, and restarting the apps by hand was the most repeated chore during the build. Named configs
+  start each app in one step and reuse it if it's already running. Hard-coded paths match the README and this one machine.
+- **Revisit:** If the repo is cloned anywhere other than `C:\dci`, make the paths relative (or document the change).
+  The configs only start the apps: build first (README), and start `webforms` and `api` before `gateway`.
