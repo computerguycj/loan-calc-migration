@@ -39,6 +39,8 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Web" />
+    <!-- JavaScriptSerializer (Stage 6a) and ScriptManager/UpdatePanel (6c); part of .NET Framework. -->
+    <Reference Include="System.Web.Extensions" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="CompareVue.aspx" />

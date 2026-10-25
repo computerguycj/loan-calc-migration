@@ -15,6 +15,7 @@ Throwaway code for interview prep. Not financial advice.
 | `src/LoanCalc.Api` | ASP.NET Core minimal API | Stage 3 ✅ |
 | `src/loan-calc-vue` | Vite + Vue 3 `<loan-compare>` custom element, hosted by `CompareVue.aspx` | Stage 4 ✅ |
 | `src/LoanCalc.Gateway` | YARP reverse proxy: one origin for both apps | Stage 5 ✅ |
+| `Default.aspx` islands | Vue elements inside the Web Forms page: `<loan-results>` (6a) | Stage 6 🚧 |
 
 ## Ports
 
@@ -100,8 +101,10 @@ Responses:
 `/api/loans/compare` on the same origin. `LoanCalc.Gateway` makes that work: it sends `/api/*` to the API and
 every other path to Web Forms. Open the site through the gateway.
 
-1. Build the custom element (from the repo root). This writes
-   `src/LoanCalc.WebForms/Scripts/loan-compare/loan-compare.js`, which isn't checked in:
+1. Build the custom elements (from the repo root). This writes
+   `src/LoanCalc.WebForms/Scripts/loan-compare/loan-compare.js`, which isn't checked in. Both pages load it:
+   `CompareVue.aspx` for `<loan-compare>`, and `Default.aspx` for its `<loan-results>` island (without the
+   bundle, `Default.aspx` still works and shows the server-rendered table):
 
    ```bash
    npm --prefix src/loan-calc-vue ci
@@ -171,7 +174,8 @@ the element falls back to its built-in defaults.
 | Yarp.ReverseProxy 2.3.0 | LoanCalc.Gateway | MIT |
 | System.IO.Hashing 8.0.0 (transitive, via YARP) | LoanCalc.Gateway | MIT |
 
-`LoanCalc.Core`, `LoanCalc.WebForms`, and `LoanCalc.Api` have no package dependencies. The API and gateway
+`LoanCalc.Core`, `LoanCalc.WebForms`, and `LoanCalc.Api` have no package dependencies. `LoanCalc.WebForms`
+references `System.Web.Extensions`, which ships with .NET Framework. The API and gateway
 also use the ASP.NET Core shared framework (MIT).
 
 npm packages in `src/loan-calc-vue` (versions pinned in `package.json`):

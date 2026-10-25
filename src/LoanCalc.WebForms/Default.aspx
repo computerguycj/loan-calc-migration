@@ -7,6 +7,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Compare two loans</title>
     <link href="Content/site.css" rel="stylesheet" />
+    <%-- Registers the Vue islands. defer: elements upgrade after parsing, so their light-DOM children exist. --%>
+    <script src="Scripts/loan-compare/loan-compare.js" defer></script>
 </head>
 <body>
     <form id="form1" runat="server">
@@ -23,27 +25,32 @@
 
             <asp:Button ID="CompareButton" runat="server" Text="Compare" CssClass="button" OnClick="CompareButton_Click" />
 
-            <asp:Panel ID="ResultsPanel" runat="server" Visible="false" CssClass="results">
-                <table>
-                    <caption>Results <span class="muted">(the lower value in each row is highlighted)</span></caption>
-                    <thead>
-                        <tr><th scope="col"></th><th scope="col">Loan A</th><th scope="col">Loan B</th></tr>
-                    </thead>
-                    <tbody>
-                        <asp:Repeater ID="ResultRows" runat="server" ItemType="LoanCalc.WebForms.ResultRow">
-                            <ItemTemplate>
-                                <tr>
-                                    <th scope="row"><%#: Item.Label %></th>
-                                    <td class="<%#: Item.ACssClass %>"><%#: Item.A %></td>
-                                    <td class="<%#: Item.BCssClass %>"><%#: Item.B %></td>
-                                </tr>
-                            </ItemTemplate>
-                        </asp:Repeater>
-                    </tbody>
-                </table>
-                <p class="muted note">APR includes fees and is based on the scheduled payments only. Extra payments
-                    lower total interest and total payback but don't change APR.</p>
-            </asp:Panel>
+            <%-- Vue island: renders the results attribute (JSON) in its shadow root. The server-rendered
+                 panel inside is light DOM, shown only when JavaScript is off. Plain markup, not runat="server":
+                 the Web Forms parser rejects server tags with a hyphen in the name. --%>
+            <loan-results results="<%: ResultsJson %>">
+                <asp:Panel ID="ResultsPanel" runat="server" Visible="false" CssClass="results">
+                    <table>
+                        <caption>Results <span class="muted">(the lower value in each row is highlighted)</span></caption>
+                        <thead>
+                            <tr><th scope="col"></th><th scope="col">Loan A</th><th scope="col">Loan B</th></tr>
+                        </thead>
+                        <tbody>
+                            <asp:Repeater ID="ResultRows" runat="server" ItemType="LoanCalc.WebForms.ResultRow">
+                                <ItemTemplate>
+                                    <tr>
+                                        <th scope="row"><%#: Item.Label %></th>
+                                        <td class="<%#: Item.ACssClass %>"><%#: Item.A %></td>
+                                        <td class="<%#: Item.BCssClass %>"><%#: Item.B %></td>
+                                    </tr>
+                                </ItemTemplate>
+                            </asp:Repeater>
+                        </tbody>
+                    </table>
+                    <p class="muted note">APR includes fees and is based on the scheduled payments only. Extra payments
+                        lower total interest and total payback but don't change APR.</p>
+                </asp:Panel>
+            </loan-results>
         </main>
     </form>
 </body>

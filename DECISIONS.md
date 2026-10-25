@@ -193,3 +193,42 @@ One entry per real decision: what, why, and what I'd revisit.
   start each app in one step and reuse it if it's already running. Hard-coded paths match the README and this one machine.
 - **Revisit:** If the repo is cloned anywhere other than `C:\dci`, make the paths relative (or document the change).
   The configs only start the apps: build first (README), and start `webforms` and `api` before `gateway`.
+
+## 27. Stage 6a: `<loan-results>` island inside the Web Forms page, fed by a JSON attribute
+
+- **What:** `Default.aspx` wraps the server-rendered results panel in `<loan-results results="…">`. After a successful
+  Compare postback the code-behind serializes both `LoanResult`s with `JavaScriptSerializer` (from `System.Web.Extensions`, part of
+  .NET Framework) into the same camelCase shape the API returns. The element renders that in its shadow root and never calls the API.
+  The server table stays as light DOM; the element has no `<slot>`, so the table shows only when JavaScript is off.
+- **Why:** It's the smallest island that proves a Vue component can live inside `<form runat="server">` and take its data from a
+  postback. Matching the API shape lets the island reuse the same Vue table as `<loan-compare>`. Leaving the table in place keeps the
+  no-JS path for free.
+- **Revisit:** The table is rendered twice (C# `ResultRow` and `ResultsTable.vue`) and the formatting could drift. Delete the server
+  table once no-JS support stops mattering.
+
+## 28. Custom elements on a Web Forms page are plain markup, not `runat="server"`
+
+- **What:** `<loan-results>` is written as literal HTML, with its attribute set by `<%: ResultsJson %>` from a protected
+  code-behind property.
+- **Why:** The Web Forms parser rejects server tags with a hyphen in the name ("The server tag is not well formed"), so a custom element
+  can't be an `HtmlGenericControl`. `<%: %>` HTML-encodes, so the JSON is a safe attribute value.
+- **Revisit:** If an island ever needs server-side state across postbacks (view state), wrap it in a `PlaceHolder` or write a small
+  server control that renders the tag.
+
+## 29. One bundle for every element, still named `loan-compare.js`
+
+- **What:** `main.js` registers `<loan-compare>` and `<loan-results>` (and later islands) from one IIFE bundle. The file keeps its
+  Stage 4 name and folder. Adding `<loan-results>` took it from 81,314 to 81,787 bytes (+473 B; gzipped 30,704 → 30,796, +92 B).
+- **Why:** Vue is almost all of the bundle, and one bundle loads it once per page whatever elements the page uses. That settles
+  decision 18's worry about several islands on one page without moving to ES modules. Keeping the name means `CompareVue.aspx`
+  stays untouched.
+- **Revisit:** Rename it (e.g. `loan-elements.js`) the next time `CompareVue.aspx` changes anyway. Split per element only if one gets
+  heavy enough that pages not using it notice.
+
+## 30. Shared `ResultsTable.vue` and `theme.css` across elements
+
+- **What:** The results table and its styles moved out of `LoanCompare.vue` into `ResultsTable.vue`. The `:host` theme block moved
+  into `theme.css`, which each element's root component includes with `<style src="./theme.css">`.
+- **Why:** Two elements show the same table. Child component styles are injected into the parent element's shadow root, but
+  each element is its own shadow root, so the theme variables must be declared in every root.
+- **Revisit:** Nothing, unless an element needs a different table.

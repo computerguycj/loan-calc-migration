@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Web.Script.Serialization;
 using System.Web.UI;
 using LoanCalc.Core;
 
@@ -8,6 +9,12 @@ namespace LoanCalc.WebForms
 {
     public partial class _Default : Page
     {
+        /// <summary>
+        /// The <c>&lt;loan-results&gt;</c> attribute: both results in the same camelCase shape the API returns,
+        /// or empty when there's nothing to show.
+        /// </summary>
+        protected string ResultsJson { get; private set; } = "";
+
         protected void Page_Load(object sender, EventArgs e)
         {
             if (!IsPostBack)
@@ -29,6 +36,19 @@ namespace LoanCalc.WebForms
 
             ResultRows.DataSource = ResultRow.Build(a, b);
             ResultRows.DataBind();
+            ResultsJson = new JavaScriptSerializer().Serialize(new { loanA = Shape(a), loanB = Shape(b) });
+        }
+
+        private static object Shape(LoanResult r)
+        {
+            return new
+            {
+                monthlyPayment = r.MonthlyPayment,
+                totalInterest = r.TotalInterest,
+                totalPayback = r.TotalPayback,
+                aprPercent = r.AprPercent,
+                payoffMonths = r.PayoffMonths,
+            };
         }
     }
 
