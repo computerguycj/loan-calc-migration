@@ -14,7 +14,11 @@
     </div>
     <div class="field">
         <asp:Label runat="server" AssociatedControlID="Term" Text="Term" />
-        <asp:DropDownList ID="Term" runat="server" />
+        <%-- Vue island: buttons in place of the select. The select stays as the posted field and the no-JS fallback;
+             the element finds it as its own child, so no client ids are involved. --%>
+        <term-picker label="Term" invalid="<%: TermInvalid ? "true" : "false" %>">
+            <asp:DropDownList ID="Term" runat="server" />
+        </term-picker>
     </div>
     <div class="field">
         <asp:Label runat="server" AssociatedControlID="Fees" Text="Closing costs and fees ($)" />

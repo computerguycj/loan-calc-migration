@@ -232,3 +232,30 @@ One entry per real decision: what, why, and what I'd revisit.
 - **Why:** Two elements show the same table. Child component styles are injected into the parent element's shadow root, but
   each element is its own shadow root, so the theme variables must be declared in every root.
 - **Revisit:** Nothing, unless an element needs a different table.
+
+## 31. Stage 6b: `<term-picker>` wraps the real `<select>` instead of a hidden field
+
+- **What:** In `LoanInputs.ascx` the Term `DropDownList` is the light-DOM child of `<term-picker label="Term">`. The element
+  finds it with `useHost().querySelector('select')`, reads its options and value from it, and renders a
+  `role="radiogroup"` of buttons (arrow keys, roving tabindex) in its shadow root. Each choice is written back to the select, which
+  is what posts. The code-behind still reads `Term.SelectedValue`, and `LoanValidator` still decides. Invalid state is an
+  explicit `invalid="true|false"` attribute, rendered from `LoanInputs.TermInvalid`, which `ShowErrors` sets.
+  Bundle: 81,787 → 83,590 bytes (+1,803; gzipped 30,796 → 31,362, +566).
+- **Why:**
+  - Finding its own child needs no client IDs, and two pickers on one page can't mix up their fields.
+  - Without JavaScript the select is an ordinary dropdown; a hidden field would have left no way to pick a term.
+  - The options come from `LoanValidator.AllowedTerms` through `Page_Init`, so nothing is hard-coded in JS.
+  - Invalid state is the element's own attribute, not read from the select's `aria-invalid`. Vue custom elements react to changes
+    in their own attributes but not their children's, so reading the select would only ever see the value at mount. The attribute
+    also puts the element's contract (`label`, `invalid`, a child select) in the markup, instead of relying on how `ShowErrors`
+    marks the select. Because the element is plain markup (decision 28), the attribute is always written, so `"false"` means
+    false. An empty value also means true, as with boolean attributes. Changing it in place restyles the same element.
+  - The cost is two flags set in the same `ShowErrors` call: `aria-invalid` on the select (still needed for no-JS screen readers)
+    and `invalid` on the element.
+  - Labels and `aria-labelledby` can't reach into a shadow root, so the group gets its name from the `label` attribute.
+  - The page CSS sets `.field term-picker` to a flex column; without it the undefined, inline element shrinks the no-JS select.
+- **Revisit:** Event validation rejects a posted term that isn't in the list (500, "Invalid postback or callback argument") before
+  Core sees it. That's a second guard, but it means Core's term error, and so `invalid="true"` from the server, can't be reached
+  from the UI; only the element side is tested (by setting the attribute in the browser).
+  Catch it and show a friendly error if tampered posts ever matter. Consider form-associated custom elements (`ElementInternals`)
+  once Vue's `defineCustomElement` supports them, so the element could post without a child field.

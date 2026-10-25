@@ -56,6 +56,8 @@ body {
     border-radius: var(--lc-radius);
 }
 .field .invalid { border-color: var(--lc-error); outline: 1px solid var(--lc-error); }
+/* Without JavaScript the element is undefined, and so inline; this keeps its <select> full width like the inputs. */
+.field term-picker { display: flex; flex-direction: column; }
 
 .errors {
     margin: 0 0 12px;

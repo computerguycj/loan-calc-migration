@@ -15,7 +15,7 @@ Throwaway code for interview prep. Not financial advice.
 | `src/LoanCalc.Api` | ASP.NET Core minimal API | Stage 3 ✅ |
 | `src/loan-calc-vue` | Vite + Vue 3 `<loan-compare>` custom element, hosted by `CompareVue.aspx` | Stage 4 ✅ |
 | `src/LoanCalc.Gateway` | YARP reverse proxy: one origin for both apps | Stage 5 ✅ |
-| `Default.aspx` islands | Vue elements inside the Web Forms page: `<loan-results>` (6a) | Stage 6 🚧 |
+| `Default.aspx` islands | Vue elements inside the Web Forms page: `<loan-results>` (6a), `<term-picker>` (6b) | Stage 6 🚧 |
 
 ## Ports
 
@@ -103,8 +103,8 @@ every other path to Web Forms. Open the site through the gateway.
 
 1. Build the custom elements (from the repo root). This writes
    `src/LoanCalc.WebForms/Scripts/loan-compare/loan-compare.js`, which isn't checked in. Both pages load it:
-   `CompareVue.aspx` for `<loan-compare>`, and `Default.aspx` for its `<loan-results>` island (without the
-   bundle, `Default.aspx` still works and shows the server-rendered table):
+   `CompareVue.aspx` for `<loan-compare>`, and `Default.aspx` for its `<loan-results>` and `<term-picker>` islands
+   (without the bundle, `Default.aspx` still works, with the server-rendered table and a plain Term dropdown):
 
    ```bash
    npm --prefix src/loan-calc-vue ci

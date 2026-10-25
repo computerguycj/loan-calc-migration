@@ -13,6 +13,9 @@ namespace LoanCalc.WebForms
     {
         public string Title { get; set; }
 
+        /// <summary>Rendered as the <c>&lt;term-picker&gt;</c> <c>invalid</c> attribute, since the element can't see the select's state change.</summary>
+        protected bool TermInvalid { get; private set; }
+
         protected void Page_Init(object sender, EventArgs e)
         {
             // Rebuilt on every request (before post data loads) so the list never depends on view state.
@@ -73,6 +76,7 @@ namespace LoanCalc.WebForms
                 { nameof(LoanInput.Fees), Fees },
                 { nameof(LoanInput.ExtraMonthlyPayment), Extra },
             };
+            TermInvalid = errors.Any(e => e.Field == nameof(LoanInput.TermYears));
             foreach (var pair in fields)
             {
                 bool invalid = errors.Any(e => e.Field == pair.Key);

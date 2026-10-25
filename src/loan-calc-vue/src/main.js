@@ -1,11 +1,13 @@
 import { defineCustomElement } from 'vue'
 import LoanCompare from './LoanCompare.vue'
 import LoanResults from './LoanResults.vue'
+import TermPicker from './TermPicker.vue'
 
 // One bundle registers every element, so Vue loads once per page whichever elements it uses.
 const elements = {
   'loan-compare': LoanCompare,
   'loan-results': LoanResults,
+  'term-picker': TermPicker,
 }
 
 // Guard against the script being included twice on one page.
