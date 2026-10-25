@@ -223,7 +223,9 @@ One entry per real decision: what, why, and what I'd revisit.
   decision 18's worry about several islands on one page without moving to ES modules. Keeping the name means `CompareVue.aspx`
   stays untouched.
 - **Revisit:** Rename it (e.g. `loan-elements.js`) the next time `CompareVue.aspx` changes anyway. Split per element only if one gets
-  heavy enough that pages not using it notice.
+  heavy enough that pages not using it notice. IIS Express serves the bundle with only an ETag and no `Cache-Control`, so the
+  browser checks with the server on every load of either page. Since Stage 6c, that matters more on repeat visits than the
+  ScriptManager scripts (decision 32). When renaming, use a hashed filename and a long `max-age`.
 
 ## 30. Shared `ResultsTable.vue` and `theme.css` across elements
 
@@ -259,3 +261,30 @@ One entry per real decision: what, why, and what I'd revisit.
   from the UI; only the element side is tested (by setting the attribute in the browser).
   Catch it and show a friendly error if tampered posts ever matter. Consider form-associated custom elements (`ElementInternals`)
   once Vue's `defineCustomElement` supports them, so the element could post without a child field.
+
+## 32. Stage 6c: one UpdatePanel around the inputs, the Compare button, and the results
+
+- **What:** `Default.aspx` has a `ScriptManager` and one `UpdatePanel` (`ComparePanel`). The panel contains both `LoanInputs`
+  controls, the Compare button, and `<loan-results>`. Compare posts back asynchronously and only the panel's HTML is replaced.
+  Without JavaScript the button still does a normal full postback.
+- **Why:**
+  - The first version wrapped only the button and results, as planned. Valid input worked, but a rejected input (rate 50%)
+    made the results disappear with no error. The error list and the field's `aria-invalid` render inside `LoanInputs`, outside
+    the panel, so the browser never received them. Everything the server changes on a postback has to be inside the panel.
+  - Both islands survive replacement without any code. The panel swaps in new HTML; the old elements are disconnected and Vue
+    unmounts them (their `_instance` is cleared, so `onBeforeUnmount` cleanup runs). The new `<loan-results>` and `<term-picker>`
+    tags are already defined, so they start up at once and read their attributes and child select. Chosen terms survive because
+    the select is a real form field, and Microsoft Ajax posts every field in `form.elements`.
+  - This is why both islands keep their state in attributes and light-DOM fields, not only in Vue: a replaced island starts from
+    the markup.
+- **Revisit:**
+  - Cost: the `ScriptManager` scripts are 165,774 bytes (40,167 gzipped) in release mode, 444,316 in debug (`debug="true"` in
+    `Web.config` serves those). That's more than the whole Vue bundle, for one async button. It's mostly a first-visit cost:
+    `ScriptResource.axd` and `WebResource.axd` come back gzipped with `Cache-Control: public` and a one-year `Expires`, and their
+    URLs change when the assembly does. Kept on purpose: this stage exists to show islands surviving partial postbacks, and the
+    ScriptManager leaves with the UpdatePanel. Microsoft's script CDN (`EnableCdn`) was rejected because it's the same bytes plus
+    an outside host.
+  - Each async postback replaces the Compare button too, so keyboard focus drops to `<body>`, just as it does after a full postback.
+    Put focus back on the results or the first error if this ever matters.
+  - The panel still sends view state and renders every input on each request. The next migration step is having the Compare
+    button call `/api/loans/compare` (as `<loan-compare>` does), which removes the UpdatePanel and the ScriptManager.

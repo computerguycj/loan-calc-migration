@@ -12,8 +12,10 @@ namespace LoanCalc.WebForms
     public partial class _Default
     {
         protected global::System.Web.UI.HtmlControls.HtmlForm form1;
+        protected global::System.Web.UI.ScriptManager ScriptManager;
         protected global::LoanCalc.WebForms.LoanInputs LoanA;
         protected global::LoanCalc.WebForms.LoanInputs LoanB;
+        protected global::System.Web.UI.UpdatePanel ComparePanel;
         protected global::System.Web.UI.WebControls.Button CompareButton;
         protected global::System.Web.UI.WebControls.Panel ResultsPanel;
         protected global::System.Web.UI.WebControls.Repeater ResultRows;

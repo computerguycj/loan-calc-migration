@@ -15,7 +15,7 @@ Throwaway code for interview prep. Not financial advice.
 | `src/LoanCalc.Api` | ASP.NET Core minimal API | Stage 3 ✅ |
 | `src/loan-calc-vue` | Vite + Vue 3 `<loan-compare>` custom element, hosted by `CompareVue.aspx` | Stage 4 ✅ |
 | `src/LoanCalc.Gateway` | YARP reverse proxy: one origin for both apps | Stage 5 ✅ |
-| `Default.aspx` islands | Vue elements inside the Web Forms page: `<loan-results>` (6a), `<term-picker>` (6b) | Stage 6 🚧 |
+| `Default.aspx` islands | Vue elements inside the Web Forms page: `<loan-results>` (6a), `<term-picker>` (6b), both inside an UpdatePanel (6c) | Stage 6 ✅ |
 
 ## Ports
 

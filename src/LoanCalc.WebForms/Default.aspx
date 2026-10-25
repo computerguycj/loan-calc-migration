@@ -12,45 +12,52 @@
 </head>
 <body>
     <form id="form1" runat="server">
+        <asp:ScriptManager ID="ScriptManager" runat="server" />
         <main class="page">
             <header class="page-header">
                 <h1>Compare two loans</h1>
                 <p class="muted">Web Forms version: the server calculates on each postback. <a href="CompareVue.aspx">Vue version</a></p>
             </header>
 
-            <div class="loans">
-                <lc:LoanInputs ID="LoanA" runat="server" Title="Loan A" />
-                <lc:LoanInputs ID="LoanB" runat="server" Title="Loan B" />
-            </div>
+            <%-- Compare posts back asynchronously: only this panel's HTML comes back and replaces the old.
+                 The inputs are inside too, because their validation errors render with them. --%>
+            <asp:UpdatePanel ID="ComparePanel" runat="server">
+                <ContentTemplate>
+                    <div class="loans">
+                        <lc:LoanInputs ID="LoanA" runat="server" Title="Loan A" />
+                        <lc:LoanInputs ID="LoanB" runat="server" Title="Loan B" />
+                    </div>
 
-            <asp:Button ID="CompareButton" runat="server" Text="Compare" CssClass="button" OnClick="CompareButton_Click" />
+                    <asp:Button ID="CompareButton" runat="server" Text="Compare" CssClass="button" OnClick="CompareButton_Click" />
 
-            <%-- Vue island: renders the results attribute (JSON) in its shadow root. The server-rendered
-                 panel inside is light DOM, shown only when JavaScript is off. Plain markup, not runat="server":
-                 the Web Forms parser rejects server tags with a hyphen in the name. --%>
-            <loan-results results="<%: ResultsJson %>">
-                <asp:Panel ID="ResultsPanel" runat="server" Visible="false" CssClass="results">
-                    <table>
-                        <caption>Results <span class="muted">(the lower value in each row is highlighted)</span></caption>
-                        <thead>
-                            <tr><th scope="col"></th><th scope="col">Loan A</th><th scope="col">Loan B</th></tr>
-                        </thead>
-                        <tbody>
-                            <asp:Repeater ID="ResultRows" runat="server" ItemType="LoanCalc.WebForms.ResultRow">
-                                <ItemTemplate>
-                                    <tr>
-                                        <th scope="row"><%#: Item.Label %></th>
-                                        <td class="<%#: Item.ACssClass %>"><%#: Item.A %></td>
-                                        <td class="<%#: Item.BCssClass %>"><%#: Item.B %></td>
-                                    </tr>
-                                </ItemTemplate>
-                            </asp:Repeater>
-                        </tbody>
-                    </table>
-                    <p class="muted note">APR includes fees and is based on the scheduled payments only. Extra payments
-                        lower total interest and total payback but don't change APR.</p>
-                </asp:Panel>
-            </loan-results>
+                    <%-- Vue island: renders the results attribute (JSON) in its shadow root. The server-rendered
+                         panel inside is light DOM, shown only when JavaScript is off. Plain markup, not runat="server":
+                         the Web Forms parser rejects server tags with a hyphen in the name. --%>
+                    <loan-results results="<%: ResultsJson %>">
+                        <asp:Panel ID="ResultsPanel" runat="server" Visible="false" CssClass="results">
+                            <table>
+                                <caption>Results <span class="muted">(the lower value in each row is highlighted)</span></caption>
+                                <thead>
+                                    <tr><th scope="col"></th><th scope="col">Loan A</th><th scope="col">Loan B</th></tr>
+                                </thead>
+                                <tbody>
+                                    <asp:Repeater ID="ResultRows" runat="server" ItemType="LoanCalc.WebForms.ResultRow">
+                                        <ItemTemplate>
+                                            <tr>
+                                                <th scope="row"><%#: Item.Label %></th>
+                                                <td class="<%#: Item.ACssClass %>"><%#: Item.A %></td>
+                                                <td class="<%#: Item.BCssClass %>"><%#: Item.B %></td>
+                                            </tr>
+                                        </ItemTemplate>
+                                    </asp:Repeater>
+                                </tbody>
+                            </table>
+                            <p class="muted note">APR includes fees and is based on the scheduled payments only. Extra payments
+                                lower total interest and total payback but don't change APR.</p>
+                        </asp:Panel>
+                    </loan-results>
+                </ContentTemplate>
+            </asp:UpdatePanel>
         </main>
     </form>
 </body>
