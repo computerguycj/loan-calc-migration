@@ -7,6 +7,7 @@ Vue + ASP.NET Core. See README.md for layout and how to run it, and DECISIONS.md
 
 - Keep it small; this is throwaway interview prep.
 - Work in stages and stop after each for review. Commit only when asked.
+- If an agreed design turns out awkward to build, stop and propose the change before building a different version.
 - Ask before installing SDKs or global tools. Use only packages with clear open-source licenses, and list each in the README package table.
 - One git repo at the root; never `git init` in a subfolder.
 - Server-side validation (`LoanValidator` in LoanCalc.Core) is the source of truth; client checks are a convenience.
@@ -17,7 +18,7 @@ Vue + ASP.NET Core. See README.md for layout and how to run it, and DECISIONS.md
 ## End of session
 
 1. Run `/reflect` and apply the top change it suggests.
-2. Run `/handoff` to write where things stand and what's next.
+2. Type /handoff yourself, then move the doc it writes to docs/handoff.md.
 3. Move any real decision from the handoff into DECISIONS.md, in its existing format (what, why, revisit).
 4. Run `/clear`. The next session starts from the handoff doc.
 
